@@ -11,18 +11,52 @@
 #include <sys/select.h>
 #include <sys/ioctl.h>
 #include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 
 void modem_send(char * buffer, size_t length);
 void modem_init(void);
 void modem_sync(void);
 void modem_end(void);
 
-struct termios orig_term_settings; // Saved terminal settings
+int log_in_num=0;
+int log_num=0;
+int uses[1000];
+void logc(char c){
+	//putchar(c);
+	if(log_in_num){
+		if(!isdigit(c)){
+			log_in_num=0;
+			log_num=0;
+			return;
+		}
+		log_num=log_num*10+(c-'0');
+		log_in_num++;
+		if(log_in_num==4){
+			uses[log_num]++;
+			//printf("cmd: %d\n",log_num);
+			log_num=0;
+			log_in_num=0;
+		}
+	}else{
+		if(c=='\33')
+			log_in_num=1;
+	}
+	printf("\r");
+}
 
-// Restore stdin state when exiting
+struct termios orig_term_settings; // Saved terminal settings
+char *orig_term;
+// Restore state when exiting
 void exit_pty(int err) {
+	setenv("TERM",orig_term,1);
 	tcsetattr(STDIN_FILENO, TCSANOW, &orig_term_settings);
 	modem_end();
+	int i;
+	for(i=0;i<=244;i++){
+		if(uses[i])
+			printf("%d - %d\n",i,uses[i]);
+	}
 	exit(err);
 }
 
@@ -56,6 +90,8 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	orig_term=getenv("TERM");
+	
 	// Set RAW mode on stdin
 	tcgetattr(STDIN_FILENO, &orig_term_settings);
 	struct termios new_term_settings = orig_term_settings;
@@ -88,8 +124,8 @@ int main(int argc, char *argv[]) {
 			// If data on standard input
 			int bytes=try_read(&fd_in, STDIN_FILENO);
 			if(bytes>0){
-				if(memchr(input,3,sizeof input))
-					ign=1;
+				//if(memchr(input,3,sizeof input))
+				//ign=1;
 				write(master_fd,input,bytes);
 			}else if(bytes<0){
 				fprintf(stderr, "Error %d on read standard input\n", errno);
@@ -104,13 +140,16 @@ int main(int argc, char *argv[]) {
 				if(!ign){
 					//write(STDOUT_FILENO,input,bytes);
 					modem_send(input,bytes);
+					int i;
+					for(i=0;i<bytes;i++)
+						logc(input[i]);
 				}
 			}else if(bytes<0){
 				if(errno != EIO) //when child ends, exit cleanly
 					fprintf(stderr, "Error %d on read master PTY\n", errno);
 				exit_pty(1);
 			}else{
-				//ign=0;
+				ign=0;
 				modem_send("\026",1);
 			}
 			
@@ -151,7 +190,8 @@ int main(int argc, char *argv[]) {
 		// As the child is a session leader, set the controlling terminal to be the slave side of the PTY
 		// (Mandatory for programs like the shell to make them manage correctly their outputs)
 		ioctl(STDIN_FILENO, TIOCSCTTY, 1);
-		
+
+		putenv("TERM=stat-term");
 		// Execution of the program
 		rc = execvp(argv[1], argv+1);
 

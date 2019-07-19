@@ -38,10 +38,6 @@ pa_buffer_attr buf_attr = {
 int sent=0;
 int odd=0;
 
-void modem_init(void){
-	s = pa_simple_new(NULL, "SBterm", PA_STREAM_PLAYBACK, NULL, "play", &ss, NULL, &buf_attr, NULL);
-}
-
 void modem_sync(void){
 	sent=0;
 	int i;
@@ -54,6 +50,15 @@ void modem_sync(void){
 	pa_simple_write(s, WAVE[1], WS*4, NULL);
 	odd=0;
 }	
+
+void modem_init(void){
+	s = pa_simple_new(NULL, "SBterm", PA_STREAM_PLAYBACK, NULL, "play", &ss, NULL, &buf_attr, NULL);
+	int i;
+	for(i=0;i<100;i++){
+		pa_simple_write(s, "\x80", 1, NULL);
+	}
+	modem_sync();
+}
 
 void modem_send(char * buffer, size_t length){
 	while(length-->0){

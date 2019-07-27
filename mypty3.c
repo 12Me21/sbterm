@@ -14,49 +14,16 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-void modem_send(char * buffer, size_t length);
-void modem_init(void);
-void modem_sync(void);
-void modem_end(void);
-
-int log_in_num=0;
-int log_num=0;
-int uses[1000];
-void logc(char c){
-	//putchar(c);
-	if(log_in_num){
-		if(!isdigit(c)){
-			log_in_num=0;
-			log_num=0;
-			return;
-		}
-		log_num=log_num*10+(c-'0');
-		log_in_num++;
-		if(log_in_num==4){
-			uses[log_num]++;
-			//printf("cmd: %d\n",log_num);
-			log_num=0;
-			log_in_num=0;
-		}
-	}else{
-		if(c=='\33')
-			log_in_num=1;
-	}
-	printf("\r");
-}
+#include "pty.h"
 
 struct termios orig_term_settings; // Saved terminal settings
-char *orig_term;
+char *orig_term; //value of TERM
+char *orig_prompt;
 // Restore state when exiting
 void exit_pty(int err) {
 	setenv("TERM",orig_term,1);
 	tcsetattr(STDIN_FILENO, TCSANOW, &orig_term_settings);
 	modem_end();
-	int i;
-	for(i=0;i<=244;i++){
-		if(uses[i])
-			printf("%d - %d\n",i,uses[i]);
-	}
 	exit(err);
 }
 
@@ -109,6 +76,8 @@ int main(int argc, char *argv[]) {
 		struct timeval timeout = {0, 1};
 
 		char ign=0;
+
+		int inesc=0;
 		
 		while (1) {
 			// Wait for data from standard input and master side of PTY
@@ -139,10 +108,17 @@ int main(int argc, char *argv[]) {
 			if(bytes>0){
 				if(!ign){
 					//write(STDOUT_FILENO,input,bytes);
-					modem_send(input,bytes);
 					int i;
-					for(i=0;i<bytes;i++)
-						logc(input[i]);
+					for(i=0;i<bytes;i++){
+						if(inesc){
+							inesc=!proc_esc(input[i],modem_send);
+						}else if(input[i]=='\033'){
+							inesc=1;
+							init_esc();
+						}else{
+							modem_send(input+i,1);
+						}
+					}
 				}
 			}else if(bytes<0){
 				if(errno != EIO) //when child ends, exit cleanly
@@ -191,7 +167,8 @@ int main(int argc, char *argv[]) {
 		// (Mandatory for programs like the shell to make them manage correctly their outputs)
 		ioctl(STDIN_FILENO, TIOCSCTTY, 1);
 
-		putenv("TERM=stat-term");
+		putenv("TERM=xterm-sb");
+		//putenv("PS1=\\[\033[1;32m\\]\\u\\[\033[0m\\]:\\[\033[1;34m\\]\\w\\[\033[0m\\]\\$ ");
 		// Execution of the program
 		rc = execvp(argv[1], argv+1);
 
@@ -201,4 +178,3 @@ int main(int argc, char *argv[]) {
 
 	return 0;
 } // main
-

@@ -1,0 +1,306 @@
+xterm-sb|smilebasic terminal,
+#cub1 wraps on left edge
+	bw,
+#auto margin
+	am,
+#background color erase
+	bce,
+#newline in column 50 ignored
+	xenl,
+#can move in insert mode
+	mir,
+#printer doesn't echo
+	mc5i,
+#can move in standout mode
+	msgr,
+#size
+	cols#50, lines#30,
+#colors
+	colors#16, pairs#256,
+#print rate ?
+	cps#500,
+#graphical set map
+	acsc=``aaffggiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz{{||}}~~,
+#	scesa=\034003,
+#back tab
+	cbt=\034004,
+#bel
+	bel=\a,
+	flash=\034106,
+#cx = 0
+	cr=\r,
+#change scroll region
+	csr=\034014%p1%{32}%+%c%p2%{32}%+%c,
+#clear tabstops
+	tbc=\034017,
+#clear screen + home
+	clear=\034019,
+#clear to start of line / eol / end of display
+	el1=\034020,
+	el=\003,
+	ed=\034022,
+#xy/x/y/home/lowerleft
+	cup=\004%p2%{32}%+%c%p1%{32}%+%c,
+	hpa=\034025%p1%{32}%+%c,
+	vpa=\034186%p1%{32}%+%c,
+	home=\034030,
+	ll=\034036,
+#cursor move 1
+	cuu1=\034037,
+	cud1=\002,
+	cub1=\034032,
+	cuf1=\034035,
+#cursor move
+	cuu=\034163%p1%{32}%+%c,
+	cud=\034153%p1%{32}%+%c,
+	cub=\034158%p1%{32}%+%c,
+	cuf=\034160%p1%{32}%+%c,
+#cursor normal / invisible / very visible
+	cnorm=\016,
+	civis=\017,
+	cvvis=\014,
+#delete 1 char
+	dch1=\034041,
+#delete line
+	dl1=\034042,
+#IDK
+#	dispc=\034047,
+#alt charset
+	enacs=\034049,
+#alt charset
+	smacs=\034051,
+	rmacs=\034085,	
+#auto margins
+	smam=\034052,
+	rmam=\034086,	
+#alt buffer
+	smcup=\034055,
+	rmcup=\034088,
+#left highlight ?
+	ehhlm=\034060,
+#insert mode
+	smir=\034061,
+	rmir=\034091,	
+#horiz highlight?
+	elhlm=\034063,
+#left mode?
+	slm=\034064,
+#low highlight?
+	elohlm=\034065,
+#pc char display??
+	smpch=\034069,
+#protected mode?
+	prot=\034070,
+#reverse mode
+	rev=\034071,
+#right highlight?
+	erhlm=\034072,
+#pc scancode?
+	smsc=\034073,
+#blank mode
+	invis=\034074,
+#shadow printing?
+	sshm=\034075,
+#standout mode
+	smso=\034076,
+	rmso=\034098,
+#top highlight?
+	ethlm=\034079,
+#upward carriage?
+	sum=\034081,
+#vertical highlight?
+	evhlm=\034082,
+#erase chars
+	ech=\034084%p1%{32}%+%c,
+#disable attributes
+	sgr0=\005,
+
+	rwidm=\034090,
+	
+	rlm=\034093,
+
+	rum=\034102,
+
+	pause=\034104,
+	hook=\034105,
+
+	is1=\034112,
+	is2=\034113,
+	is3=\034114,
+#	ich1=\034119,
+#insert line
+	il1=\034120,
+#insert pad after char ?
+	ip=\034121,
+#newline
+	nel=\03446,
+#reset colors
+	op=\001,
+#delete chars	
+	dch=\034151%p1%{32}%+%c,
+#delete lines
+	dl=\034152%p1%{32}%+%c,
+#insert blanks
+	ich=\034155%p1%{32}%+%c,
+#scroll up/down
+	indn=\034156%p1%{32}%+%c,
+	rin=\034162%p1%{32}%+%c,
+#scroll up/down 1
+	ind=\034189,
+	ri=\034190,
+#insert lines
+	il=\034157%p1%{32}%+%c,
+# ?
+#	pctrm=\034165,
+#programmable function keys
+	pfkey=\034166%p1%{32}%+%c%p2%{32}%+%c,
+	pfloc=\034167%p1%{32}%+%c%p2%{32}%+%c,
+	pfxl=\034168%p1%{32}%+%c%p2%{32}%+%c%p3%{32}%+%c,
+	pfx=\034169%p1%{32}%+%c%p2%{32}%+%c,
+	pln=\034170%p1%{32}%+%c%p2%{32}%+%c,
+#print screen
+	mc0=\034171,
+#print bytes
+	mc5p=\034172,
+#printer off/on
+	mc4=\034173,
+	mc5=\034174,
+#print char multiple times
+	rep=\034178%p1%{32}%+%c%p2%{32}%+%c,
+#send next input char ?
+	rfi=\034179,
+#resets
+	rs1=\034181,
+	rs2=\034182,
+	rs3=\034183,
+#save/restore cursor
+	sc=\034187,
+	rc=\034185,
+#select charset?
+	scs=\034191%p1%{32}%+%c,
+#codesets ?
+	s0ds=\034192,
+	s1ds=\034193,
+	s2ds=\034194,
+	s3ds=\034195,
+#more attributes??
+#	sgr1=\034196%p1%{32}%+%c%p2%{32}%+%c%p3%{32}%+%c%p4%{32}%+%c%p5%{32}%+%c%p6%{32}%+%c,
+#setting colors
+#	setab=\013%p1%{32}%+%c,
+#	setaf=\006%p1%{32}%+%c,
+	setab=\013%p1%{32}%+%c,
+	setaf=\006%p1%{32}%+%c,
+#setting attributes (TODO: compress args into 1 char)
+	sgr=\034199%p1%{32}%+%c%p3%{32}%+%c%p7%{32}%+%c%p9%{32}%+%c,
+#create tabstop
+	hts=\034214,
+#tab
+	ht=\t,
+#crap names
+	u0=\034229,
+	u1=\034230,
+	u2=\034231,
+	u3=\034232,
+	u4=\034233,
+	u5=\034234,
+	u6=\034235,
+	u7=\034236,
+	u8=\034237,
+	u9=\034238,
+#don't move!
+	zerom=\034244,
+
+
+################
+##### KEYS #####
+################
+#currently copie from xterm256color, will need to be
+#modified for SB keyboard
+
+	kDC=\034[3;2~,
+	kEND=\034[1;2F,
+	kHOM=\034[1;2H,
+	kLFT=\034[1;2D,
+	kNXT=\034[6;2~,
+	kPRV=\034[5;2~,
+	kRIT=\034[1;2C,
+	kb2=\034OE,
+	kbs=\177,
+	kcbt=\034[Z,
+	kcub1=\034[D,
+	kcud1=\034[B,
+	kcuf1=\034[C,
+	kcuu1=\034[A,
+	kdch1=\034[3~,
+	kend=\034OF,
+	kent=\034OM,
+	kf1=\034OP,
+	kf10=\034[21~,
+	kf11=\034[23~,
+	kf12=\034[24~,
+	kf13=\034[1;2P,
+	kf14=\034[1;2Q,
+	kf15=\034[1;2R,
+	kf16=\034[1;2S,
+	kf17=\034[15;2~,
+	kf18=\034[17;2~,
+	kf19=\034[18;2~,
+	kf2=\034OQ,
+	kf20=\034[19;2~,
+	kf21=\034[20;2~,
+	kf22=\034[21;2~,
+	kf23=\034[23;2~,
+	kf24=\034[24;2~,
+	kf25=\034[1;5P,
+	kf26=\034[1;5Q,
+	kf27=\034[1;5R,
+	kf28=\034[1;5S,
+	kf29=\034[15;5~,
+	kf3=\034OR,
+	kf30=\034[17;5~,
+	kf31=\034[18;5~,
+	kf32=\034[19;5~,
+	kf33=\034[20;5~,
+	kf34=\034[21;5~,
+	kf35=\034[23;5~,
+	kf36=\034[24;5~,
+	kf37=\034[1;6P,
+	kf38=\034[1;6Q,
+	kf39=\034[1;6R,
+	kf4=\034OS,
+	kf40=\034[1;6S,
+	kf41=\034[15;6~,
+	kf42=\034[17;6~,
+	kf43=\034[18;6~,
+	kf44=\034[19;6~,
+	kf45=\034[20;6~,
+	kf46=\034[21;6~,
+	kf47=\034[23;6~,
+	kf48=\034[24;6~,
+	kf49=\034[1;3P,
+	kf5=\034[15~,
+	kf50=\034[1;3Q,
+	kf51=\034[1;3R,
+	kf52=\034[1;3S,
+	kf53=\034[15;3~,
+	kf54=\034[17;3~,
+	kf55=\034[18;3~,
+	kf56=\034[19;3~,
+	kf57=\034[20;3~,
+	kf58=\034[21;3~,
+	kf59=\034[23;3~,
+	kf6=\034[17~,
+	kf60=\034[24;3~,
+	kf61=\034[1;4P,
+	kf62=\034[1;4Q,
+	kf63=\034[1;4R,
+	kf7=\034[18~,
+	kf8=\034[19~,
+	kf9=\034[20~,
+	khome=\034OH,
+	kich1=\034[2~,
+	kind=\034[1;2B,
+	kmous=\034[M,
+	knp=\034[6~,
+	kpp=\034[5~,
+	kri=\034[1;2A,

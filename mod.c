@@ -16,6 +16,7 @@ char WAVE[][WS] = {
 	0xA0, 0xC0, 0xD0,
 	0xD0, 0xC0, 0xA0,
 */
+	/*
 	0x40, 0x40,// 0x40,
 	0xC0, 0xC0,// 0xC0,
 	0xC0, 0xC0,// 0xC0,
@@ -24,6 +25,17 @@ char WAVE[][WS] = {
 	0xC0, 0xC0,// 0xC0,
 	0xC0, 0xC0,// 0xC0,
 	0x40, 0x40,
+	*/
+	/* sine wave calculated using TI-80 graphing calculator */
+	10,79,
+	176,245,
+	245,176,
+	79,10,
+	10,79,
+	176,245,
+	245,176,
+	79,10
+	
 };
 
 pa_sample_spec ss = {.format = PA_SAMPLE_U8, .channels = 1, .rate = 32728/2*4*WS/8};
@@ -60,7 +72,7 @@ void modem_init(void){
 	modem_sync();
 }
 
-void modem_send(char * buffer, size_t length){
+void modem_send(char * buffer, int length){
 	while(length-->0){
 		char c=*buffer++;
 		int i;

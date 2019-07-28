@@ -18,10 +18,11 @@
 
 struct termios orig_term_settings; // Saved terminal settings
 char *orig_term; //value of TERM
-char *orig_prompt;
+char *orig_lang;
 // Restore state when exiting
 void exit_pty(int err) {
 	setenv("TERM",orig_term,1);
+	setenv("LANG",orig_lang,1);
 	tcsetattr(STDIN_FILENO, TCSANOW, &orig_term_settings);
 	modem_end();
 	exit(err);
@@ -58,6 +59,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	orig_term=getenv("TERM");
+	orig_lang=getenv("LANG");
 	
 	// Set RAW mode on stdin
 	tcgetattr(STDIN_FILENO, &orig_term_settings);
@@ -168,6 +170,7 @@ int main(int argc, char *argv[]) {
 		ioctl(STDIN_FILENO, TIOCSCTTY, 1);
 
 		putenv("TERM=xterm-sb");
+		putenv("LANG=en_US");
 		//putenv("PS1=\\[\033[1;32m\\]\\u\\[\033[0m\\]:\\[\033[1;34m\\]\\w\\[\033[0m\\]\\$ ");
 		// Execution of the program
 		rc = execvp(argv[1], argv+1);

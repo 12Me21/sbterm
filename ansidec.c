@@ -10,11 +10,12 @@
 #define CSQ_INVIS "\034074",4
 #define CSQ_EL "\003",1
 #define CSQ_EL1 "\034020",4
+#define CSQ_BOLD "\023",1
 //these aren't used by curses: implemented for this specifically
-#define CSQ_REV_OFF "\034000",4
-#define CSQ_INVIS_OFF "\034001",4
-#define CSQ_BOLD "\034002",4
-#define CSQ_BOLD_OFF "\034003",4
+#define CSQ_REV_OFF "\020",1
+#define CSQ_BOLD_OFF "\022",1
+#define CSQ_ANSI_0M "\021",1
+//todo: underline!
 
 int args[100];
 int argi;
@@ -30,6 +31,8 @@ void init_esc(){
 
 //ANSI term state:
 int fcol,bcol,bold=0,reverse=0,hidden=0;
+
+//todo: read OSC (ESC ]) and skip chars until BEL or ST (ESC \)
 
 void runcsi(int *args, int argi, char cmd, char prearg, void(*callback)(char*,int)){
 	int i=0;
@@ -80,8 +83,9 @@ void runcsi(int *args, int argi, char cmd, char prearg, void(*callback)(char*,in
 					bcol=DEF_BCOL;
 					bold=0;
 					reverse=0;
-					hidden=0;
-					changebold=changefcol=changebcol=changehidden=changereverse=1;
+					callback(CSQ_ANSI_0M);
+					//todo: see if this change helps and maybe re-add support for hidden mode
+					changebold=changefcol=changebcol=changehidden=changereverse=0;
 					break;
 				case 1:
 					bold=1;
@@ -97,24 +101,16 @@ void runcsi(int *args, int argi, char cmd, char prearg, void(*callback)(char*,in
 					reverse=1;
 					changereverse=1;
 					break;
-				case 8:
-					hidden=1;
-					changehidden=1;
-					break;
 				case 27:
 					reverse=0;
-					changehidden=1;
-					break;
-				case 28:
-					hidden=0;
-					changehidden=1;
+					changereverse=1;
 					break;
 				case 30 ... 37:
 					fcol=arg-30;
 					changefcol=1;
 					break;
 				case 38:
-					//set fg col
+					//TODO set fg col
 					changefcol=1;
 					break;
 				case 39:
@@ -126,7 +122,7 @@ void runcsi(int *args, int argi, char cmd, char prearg, void(*callback)(char*,in
 					changebcol=1;
 					break;
 				case 48:
-					//set bg col
+					//TODO set bg col
 					changebcol=1;
 					break;
 				case 49:
@@ -185,12 +181,12 @@ leave:;
 		else
 			callback(CSQ_REV_OFF);
 	}
-	if(changehidden){
+/*	if(changehidden){
 		if(hidden)
 			callback(CSQ_INVIS);
 		else
 			callback(CSQ_INVIS_OFF);
-	}
+			}*/
 	if(changebold){
 		if(bold)
 			callback(CSQ_BOLD);

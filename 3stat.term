@@ -188,11 +188,15 @@ xterm-sb|smilebasic terminal,
 #setting colors
 #	setab=\013%p1%{32}%+%c,
 #	setaf=\006%p1%{32}%+%c,
+# even though we don't use ANSI escapes, we need to use setaf/b instead of setf/b because certain programs *cough*top*cough* will fucking crash if setaf/b don't exist and the terminal supports color.
 	setab=\013%p1%{32}%+%c,
 	setaf=\006%p1%{32}%+%c,
 #setting attributes (TODO: compress args into 1 char)
-	bold=\034002,
-	sgr=\034199%p1%{32}%+%c%p3%{32}%+%c%p6%{32}%+%c%p7%{32}%+%c%p9%{32}%+%c,
+	bold=\023,
+	sgr=\034199%p1%{32}%+%c%p2%{32}%+%c%p3%{32}%+%c%p6%{32}%+%c%p7%{32}%+%c%p9%{32}%+%c,
+#%p1%p2%{2}%*%|%p3%{4}%*%|%p6%{8}%*%|%p7%{16}%*%|%p9%{32}%*%|%{32}+%c - packed, untested
+	smul=\034004,
+	rmul=\034005,
 #create tabstop
 	hts=\034214,
 #tab

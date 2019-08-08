@@ -29,11 +29,6 @@ void exit_pty(int err) {
 }
 
 char input[150];
-int try_read(fd_set *fdset, int fd_read) {
-	if(FD_ISSET(fd_read, fdset))
-		return read(fd_read, input, sizeof input);
-	return 0;
-}		
 
 int main(int argc, char *argv[]) {
 	int rc;
@@ -69,68 +64,25 @@ int main(int argc, char *argv[]) {
 	
 	// Create the child process
 	if (fork()) {
-		fd_set fd_in;
 
 		// FATHER
 
-		modem_init();
+		modem_init(master_fd);
 
-		struct timeval timeout = {0, 1};
-
-		char ign=0;
-
-		int inesc=0;
+		//struct pollfd pollfds[1] = {.fd = STDIN_FILENO, .events = POLLIN};
 		
 		while (1) {
-			// Wait for data from standard input and master side of PTY
-			FD_ZERO(&fd_in);
-			FD_SET(0, &fd_in);
-			FD_SET(master_fd, &fd_in);
-
-			if (select(master_fd + 1, &fd_in, NULL, NULL, &timeout) == -1) {
-				fprintf(stderr, "Error %d on select()\n", errno);
-				exit_pty(1);
-			}
-			
 			// If data on standard input
-			int bytes=try_read(&fd_in, STDIN_FILENO);
+			int bytes=read(STDIN_FILENO, input, sizeof input);
+			printf("read returne: %d:",bytes);
+			write(STDOUT_FILENO,input,bytes);
+			
 			if(bytes>0){
-				//if(memchr(input,3,sizeof input))
-				//ign=1;
 				write(master_fd,input,bytes);
 			}else if(bytes<0){
 				fprintf(stderr, "Error %d on read standard input\n", errno);
 				exit_pty(1);
 			}
-			
-			// If data on master side of PTY
-			bytes=try_read(&fd_in, master_fd);
-			if(bytes<sizeof input)
-				ign=0;
-			if(bytes>0){
-				if(!ign){
-					//write(STDOUT_FILENO,input,bytes);
-					int i;
-					for(i=0;i<bytes;i++){
-						if(inesc){
-							inesc=!proc_esc(input[i],modem_send);
-						}else if(input[i]=='\033'){
-							inesc=1;
-							init_esc();
-						}else{
-							modem_send(input+i,1);
-						}
-					}
-				}
-			}else if(bytes<0){
-				if(errno != EIO) //when child ends, exit cleanly
-					fprintf(stderr, "Error %d on read master PTY\n", errno);
-				exit_pty(1);
-			}else{
-				ign=0;
-				modem_send("\026",1);
-			}
-			
 		} // End while
 		
 	} else {
@@ -170,7 +122,7 @@ int main(int argc, char *argv[]) {
 		ioctl(STDIN_FILENO, TIOCSCTTY, 1);
 
 		putenv("TERM=xterm-sb");
-		putenv("LANG=en_US");
+		putenv("LANG=");
 		//putenv("PS1=\\[\033[1;32m\\]\\u\\[\033[0m\\]:\\[\033[1;34m\\]\\w\\[\033[0m\\]\\$ ");
 		// Execution of the program
 		rc = execvp(argv[1], argv+1);

@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stdio.h>
+#include "pty.h"
 
 #define DEF_FCOL 0
 #define DEF_BCOL 15
@@ -11,6 +12,9 @@
 #define CSQ_EL "\003",1
 #define CSQ_EL1 "\034020",4
 #define CSQ_BOLD "\023",1
+#define CSQ_CUP "\004",1
+#define CSQ_ED "\034022",4
+#define CSQ_CLEAR "\034019",4
 //these aren't used by curses: implemented for this specifically
 #define CSQ_REV_OFF "\020",1
 #define CSQ_BOLD_OFF "\022",1
@@ -34,10 +38,11 @@ int fcol,bcol,bold=0,reverse=0,hidden=0;
 
 //todo: read OSC (ESC ]) and skip chars until BEL or ST (ESC \)
 
-void runcsi(int *args, int argi, char cmd, char prearg, void(*callback)(char*,int)){
+void runcsi(int *args, int argi, char cmd, char prearg, void(*callback)(Sample*,int*,char*,int),void*sam_buf,int*written){
 	int i=0;
 	int changefcol=0,changebcol=0,changehidden=0,changereverse=0,changebold=0;
-	int arg;
+	int arg,arg2;
+	char argout[2];
 	while(i<=argi){
 		arg=args[i++];
 		switch(prearg){
@@ -83,7 +88,7 @@ void runcsi(int *args, int argi, char cmd, char prearg, void(*callback)(char*,in
 					bcol=DEF_BCOL;
 					bold=0;
 					reverse=0;
-					callback(CSQ_ANSI_0M);
+					callback(sam_buf,written,CSQ_ANSI_0M);
 					//todo: see if this change helps and maybe re-add support for hidden mode
 					changebold=changefcol=changebcol=changehidden=changereverse=0;
 					break;
@@ -142,10 +147,33 @@ void runcsi(int *args, int argi, char cmd, char prearg, void(*callback)(char*,in
 					goto leave;
 				}
 				break;
+			case 'H':
+				if (i<=argi)
+					arg2=args[i++];
+				else
+					arg2=0;
+				callback(sam_buf,written,CSQ_CUP);
+				if(arg)
+					arg--;
+				if(arg2)
+					arg2--;
+				argout[0]=' '+arg2;
+				argout[1]=' '+arg;
+				callback(sam_buf,written,argout,2);
+				break;
+			case 'J':
+				switch(arg){
+				case 0: callback(sam_buf,written,CSQ_ED); break;
+				case 2: callback(sam_buf,written,CSQ_CLEAR); break;
+				default:
+					printf("CSI %d ... J", arg);
+					goto leave;
+				}
+				break;
 			case 'K':
 				switch(arg){
-				case 0: callback(CSQ_EL); break;
-				case 1: callback(CSQ_EL1); break;
+				case 0: callback(sam_buf,written,CSQ_EL); break;
+				case 1: callback(sam_buf,written,CSQ_EL1); break;
 				default:
 					printf("CSI %d ... K", arg);
 					goto leave;
@@ -164,22 +192,21 @@ void runcsi(int *args, int argi, char cmd, char prearg, void(*callback)(char*,in
 	}
 leave:;
 	// Now process all the colors and shit
-	char argout[2];
 	if(changefcol){
-		callback(CSQ_SETF);
+		callback(sam_buf,written,CSQ_SETF);
 		argout[0]=fcol+' ';
-		callback(argout,1);
+		callback(sam_buf,written,argout,1);
 	}
 	if(changebcol){
-		callback(CSQ_SETB);
+		callback(sam_buf,written,CSQ_SETB);
 		argout[0]=' '+bcol;
-		callback(argout,1);
+		callback(sam_buf,written,argout,1);
 	}
 	if(changereverse){
 		if(reverse)
-			callback(CSQ_REV);
+			callback(sam_buf,written,CSQ_REV);
 		else
-			callback(CSQ_REV_OFF);
+			callback(sam_buf,written,CSQ_REV_OFF);
 	}
 /*	if(changehidden){
 		if(hidden)
@@ -189,9 +216,9 @@ leave:;
 			}*/
 	if(changebold){
 		if(bold)
-			callback(CSQ_BOLD);
+			callback(sam_buf,written,CSQ_BOLD);
 		else
-			callback(CSQ_BOLD_OFF);
+			callback(sam_buf,written,CSQ_BOLD_OFF);
 	}
 }
 
@@ -199,7 +226,7 @@ leave:;
 //if sequence is not finished, returns 0
 //otherwise returns 1
 //passes sbterm escape sequences to callback function
-char proc_esc(char c,void(*callback)(char*,int)){
+char proc_esc(char c,void(*callback)(Sample*,int*,char*,int),void*sam_buf,int*written){
 	switch(state){
 		//ESC _
 	case start:
@@ -229,7 +256,7 @@ char proc_esc(char c,void(*callback)(char*,int)){
 			argi++;
 			args[argi]=0;
 		}else{
-			runcsi(args,argi,c,prearg,callback);
+			runcsi(args,argi,c,prearg,callback,sam_buf,written);
 			state=finished;
 			break;
 		}

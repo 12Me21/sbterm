@@ -24,7 +24,6 @@ void exit_pty(int err) {
 	setenv("TERM",orig_term,1);
 	setenv("LANG",orig_lang,1);
 	tcsetattr(STDIN_FILENO, TCSANOW, &orig_term_settings);
-	modem_end();
 	exit(err);
 }
 
@@ -95,7 +94,7 @@ int main(int argc, char *argv[]) {
 		close(master_fd);
 
 		// Set terminal size
-		struct winsize winsize = {30, 50, 400, 240};
+		struct winsize winsize = {24, 80, 400, 240};
 		ioctl(slave_fd, TIOCSWINSZ, &winsize);
 		
 		// The slave side of the PTY becomes the standard input and outputs of the child process

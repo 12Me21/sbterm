@@ -4,9 +4,12 @@ void modem_sync(void);
 void exit_pty(int);
 void modem_end(void);
 //int modem_recv(char *,int);
+typedef char Sample;
 
 void init_esc(void);
-char proc_esc(char c,void(*callback)(char*,int));
+char proc_esc(char c,void(*callback)(Sample*,int*,char*,int),void*sam_buf,int*written);
+
+
 
 //modem API:
 // - call modem_init first

@@ -1,15 +1,10 @@
-void modem_send(char * buffer, int length);
 void modem_init(int);
-void modem_sync(void);
 void exit_pty(int);
-void modem_end(void);
-//int modem_recv(char *,int);
-typedef char Sample;
+
+typedef unsigned char Sample;
 
 void init_esc(void);
-char proc_esc(char c,void(*callback)(Sample*,int*,char*,int),void*sam_buf,int*written);
-
-
+char proc_esc(char,void(*callback)(char*,int,void*),void*);
 
 //modem API:
 // - call modem_init first
